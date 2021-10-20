@@ -59,21 +59,42 @@ precedence = (
 names = {}
 abstractTree = []
 
+class Node:
+    val = ''
+    type = ''
+    children = []
+
+    def __init__(self,val,type,children):
+        self.val = val
+        self.type = type
+        self.children = children
+
+
 def p_statement_declare_int(p):
     '''statement : INTDEC NAME is_assing
     '''
-    names[p[2]] = { "type": "INT", "value":0}
+    if type(p[3]) == float:
+        print("You can not assing a float to an integer")
+    else:
+        variable = Node(p[2], 'INT', [])
+        n = Node(p[3],'=',[variable, p[3]])
+        abstractTree.append(n)
+        # names[p[2]] = { "type": "INT", "value": p[3]}
+
+def p_statement_declare_float(p):
+    'statement : FLOATDEC NAME is_assing'
+    names[p[2]] = { "type": "FLOAT", "value":p[3]}
 
 def p_is_assing(p):
     '''is_assing : "=" expression 
                 | '''
-    if 4 in p:
-        names[p[2]] = { "type": "INT", "value":p[4]}
-
-
-def p_statement_declare_float(p):
-    'statement : FLOATDEC NAME'
-    names[p[2]] = { "type": "FLOAT", "value":0}
+    # p[0] = 0
+    p[0] = Node(0,'INT',[])
+    if len(p) > 2:
+        p[0].type = p[2].type
+        p[0].val = p[2].val
+        p[0].children = p[2]
+        # p[0] = p[2]
 
 def p_statement_print(p):
     '''statement : PRINT '(' expression ')' '''
@@ -114,7 +135,8 @@ def p_expression_group(p):
 
 def p_expression_inumber(p):
     "expression : INUMBER"
-    p[0] = p[1]
+    # p[0] = p[1]
+    p[0] = Node([p[1], 'INT',[]])
 
 
 def p_expression_fnumber(p):
@@ -134,7 +156,7 @@ def p_expression_name(p):
 def p_error(p):
     if p:
         print(p)
-        print("Syntax error at line '%s' character '%s'" % (p.lexpos, p.lineno) )
+        print("Syntax error at line '%s' character '%s'" % (p.lineno, p.lexpos) )
     else:
         print("Syntax error at EOF")
 
