@@ -18,6 +18,8 @@ reserved = {
     'if': 'IF',
     'elif': 'ELIF',
     'else': 'ELSE',
+    'for': 'FOR',
+    'while': 'WHILE',
 
     # print
     'print' : 'PRINT'
@@ -111,6 +113,8 @@ def p_statement(p):
                 | statement_declare_assign FINISH statement
                 | statement_assign FINISH statement
                 | statement_condition statement
+                | statement_for statement
+                | statement_while statement
                 | empty'''
     if len(p) > 2:
         if p[2] == ';':
@@ -197,12 +201,35 @@ def p_statement_assign(p):
     p[0] = ('assign', p[1],p[2])
 
 # Control flow statements
+# IF - ELIF - ELSE
 def p_statement_condition(p):
     '''statement_condition : if_condition elif_condition else_condition'''
+    
+    # p[1] = if
+    # p[2] = elif
+    # p[3] = else
     p[0] = ('condition', p[1], p[2], p[3])
 
+# FOR
+def p_statement_for(p):
+    '''statement_for : FOR LPAREN statement_declare_assign FINISH expression FINISH statement_assign RPAREN LKEY statement RKEY
+                    | empty'''
+    
+    # p[3] = int i = 0
+    # p[3] = i < a
+    # p[5] = i+=1
+    # p[5] = print(i)
+    p[0] = ('for', p[3], p[5], p[7], p[10])
 
-# control flow
+# WHILE
+def p_statement_while(p):
+    '''statement_while : WHILE LPAREN expression RPAREN LKEY statement RKEY'''
+    
+    # p[3] = b <= a
+    # p[6] = print(i) b++
+    p[0] = ('while', p[3], p[6])
+
+# control flow if- elif - else
 def p_expression_if(p):
     """if_condition : IF LPAREN expression RPAREN LKEY statement RKEY"""
     p[0] = ('if', p[3], p[6])

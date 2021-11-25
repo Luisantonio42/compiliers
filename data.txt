@@ -1,4 +1,4 @@
-int a = 0;
+int a = 5;
 int b = 0;
 string c = "abc";
 boolean d;
@@ -12,4 +12,11 @@ elif(c == "abc"){
 }
 else {
   print("else"); 
+}
+for(int i = 0; i < a; i = i + 1){
+  print(i);
+}
+while(b <= a){
+  print(i);
+  b = b + 1;
 }
