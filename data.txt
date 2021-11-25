@@ -1,5 +1,17 @@
-int n1
-int n2
-n1 = 1
-n2 = n1 + 5
-print (n2)
+int a = 0;
+int b = 0;
+string c = "abc";
+
+boolean d;
+d = true;
+print(d == false);
+
+if(c == "cba"){
+  print("Not equals");
+}
+elif(c == "abc"){
+  print("equals");
+}
+else {
+  print("else");
+}
