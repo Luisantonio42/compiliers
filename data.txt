@@ -1,17 +1,15 @@
 int a = 0;
 int b = 0;
 string c = "abc";
-
 boolean d;
 d = true;
 print(d == false);
-
 if(c == "cba"){
-  print("Not equals");
+  print("Not equals"); 
 }
 elif(c == "abc"){
-  print("equals");
+  print("equals"); 
 }
 else {
-  print("else");
+  print("else"); 
 }

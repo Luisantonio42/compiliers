@@ -23,12 +23,12 @@ reserved = {
     'print' : 'PRINT'
  }
 
-tokens = [
+tokens = tuple([
     'INUMBER', 'FNUMBER', 'NAME', 'PLUS', 'TIMES','EXP',
     'LPAREN', 'RPAREN', 'MINUS', 'DIVIDE','EQUALS', 'ASSIGN', 
     'STRING', 'NOT_EQUALS', 'M_EQUALS', 'L_EQUALS', 'MORE', 
     'LESS', 'LKEY', 'RKEY', 'FINISH'
-] + list(reserved.values())
+] + list(reserved.values()))
 
 # arithmetic ops 
 t_PLUS    = r'\+'
@@ -110,7 +110,7 @@ def p_statement(p):
                 | statement_declare FINISH statement
                 | statement_declare_assign FINISH statement
                 | statement_assign FINISH statement
-                | statement_condition
+                | statement_condition statement
                 | empty'''
     if len(p) > 2:
         if p[2] == ';':
@@ -225,7 +225,7 @@ def p_expression_else(p):
 def p_error(p):
     if p:
         print(p)
-        print("Syntax error at line '%s' character '%s'" % (p.lineno, p.lexpos) )
+        print("Syntax error at line '%s' character '%s' = '%s' " % (p.lineno, p.lexpos, p.value))
     else:
         print("Syntax error at EOF")
 
@@ -241,10 +241,8 @@ parser = yacc.yacc()
 #         continue
 #     yacc.parse(s)
 
-# # File
+# File
 inputData = []
-with open('data.txt') as file:
-    inputData = file.readlines()
-
-for data in inputData:
-    yacc.parse(data)
+file = open("data.txt", "r")
+s = file.read()
+yacc.parse(s)
