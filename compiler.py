@@ -105,16 +105,12 @@ precedence = (
 names = {}
 abstractTree = []
 
-# Control flow
-# def p_statement_if_else(p):
-#     '''statement_if_else : if_cond'''
-#     p[0] = ('condition', p[1], p[2], p[3])
-
 def p_statement(p):
     '''statement : statement_print FINISH statement
                 | statement_declare FINISH statement
                 | statement_declare_assign FINISH statement
                 | statement_assign FINISH statement
+                | statement_condition
                 | empty'''
     if len(p) > 2:
         if p[2] == ';':
@@ -122,6 +118,7 @@ def p_statement(p):
         p[0] = (p[1],) + p[2]
     else:
         p[0]=()
+        
 # Operations
 def p_expression_binop(p):
     '''expression : expression PLUS expression
@@ -162,6 +159,7 @@ def p_types(p):
             | BOOLEANDEC'''
     p[0] = p[1]
 
+# Nedded to create a empty production to avoid infinte loops
 def p_empty(p):
     'empty :'
     pass
@@ -185,7 +183,7 @@ def p_expression_name(p):
     "expression : NAME"
     p[0] = p[1]
 
-# declarations 
+# declaration statements 
 def p_statement_declare(p):
     'statement_declare : type NAME'
     p[0] = ('declare', p[1] ,p[2])
@@ -198,22 +196,30 @@ def p_statement_assign(p):
     'statement_assign : NAME ASSIGN expression'
     p[0] = ('assign', p[1],p[2])
 
+# Control flow statements
+def p_statement_condition(p):
+    '''statement_condition : if_condition elif_condition else_condition'''
+    p[0] = ('condition', p[1], p[2], p[3])
+
+
 # control flow
-# def p_expression_if(p):
-#     """if_cond : IF LPAREN expression RPAREN LKEY statement RKEY"""
-#     p[0] = ('if', p[3],p[6])
+def p_expression_if(p):
+    """if_condition : IF LPAREN expression RPAREN LKEY statement RKEY"""
+    p[0] = ('if', p[3], p[6])
 
-# def p_expression_elif(p):
-#     """elif_cond : ELIF LPAREN expression RPAREN LKEY statement RKEY elif_cond"""
-#     if len(p) > 2:
-#         p[0] = (('elif',p[3], p[6]), ) + p[8]
-#     else:
-#         p[0] = ()
+def p_expression_elif(p):
+    """elif_condition : ELIF LPAREN expression RPAREN LKEY statement RKEY elif_condition
+                    | empty"""
+    if len(p) > 2:
+        p[0] = (('elif',p[3], p[6]), ) + p[8]
+    else:
+        p[0] = ()
 
-# def p_expression_else(p):
-#     """else_cond : ELSE LKEY statement RKEY"""
-#     if len(p) > 2:
-#         p[0] = ('else',p[3])
+def p_expression_else(p):
+    """else_condition : ELSE LKEY statement RKEY
+                | empty"""
+    if len(p) > 2:
+        p[0] = ('else', p[3])
 
 # Errors
 def p_error(p):
@@ -226,19 +232,19 @@ def p_error(p):
 
 parser = yacc.yacc()
 
-while True:
-    try:
-        s = input('calc > ')
-    except EOFError:
-        break
-    if not s:
-        continue
-    yacc.parse(s)
+# while True:
+#     try:
+#         s = input('calc > ')
+#     except EOFError:
+#         break
+#     if not s:
+#         continue
+#     yacc.parse(s)
 
 # # File
-# inputData = []
-# with open('data.txt') as file:
-#     inputData = file.readlines()
+inputData = []
+with open('data.txt') as file:
+    inputData = file.readlines()
 
-# for data in inputData:
-#     yacc.parse(data)
+for data in inputData:
+    yacc.parse(data)
