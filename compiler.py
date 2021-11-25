@@ -7,10 +7,11 @@ reserved = {
     'int' : 'INTDEC',
     'float' : 'FLOATDEC',
     'print' : 'PRINT',
+    'string': 'STRINGDEC'
  }
 
 tokens = [
-    'INUMBER', 'FNUMBER', 'NAME', 'PLUS', 'TIMES', 'LPAREN', 'RPAREN', 'MINUS', 'DIVIDE','EQUALS', 'ASSIGN'
+    'INUMBER', 'FNUMBER', 'NAME', 'PLUS', 'TIMES', 'LPAREN', 'RPAREN', 'MINUS', 'DIVIDE','EQUALS', 'ASSIGN', 'STRING'
 ] + list(reserved.values())
 
 t_PLUS    = r'\+'
@@ -123,6 +124,7 @@ def p_expression_binop(p):
                   | expression MINUS expression
                   | expression TIMES expression
                   | expression DIVIDE expression'''
+    # p[0] = ('operation',p[1],p[2],p[3])
     if p[2] == '+':
         p[0] = p[1] + p[3]
     elif p[2] == '-':
