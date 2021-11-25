@@ -56,8 +56,8 @@ lexer = lex.lex()
 # Parsing rules
 
 precedence = (
-    ('left', '+', '-'),
-    ('left', '*', '/'),
+    ('left', 'PLUS', 'MINUS'),
+    ('left', 'TIMES', 'DIVIDE'),
     ('right', 'UMINUS'),
 )
 
@@ -103,7 +103,7 @@ def p_is_assing(p):
         p[0] = p[2]
 
 def p_statement_print(p):
-    '''statement : PRINT '(' expression ')' '''
+    '''statement : PRINT LPAREN expression RPAREN '''
     print(p[3])
 
 def p_statement_assign(p):
@@ -119,15 +119,18 @@ def p_statement_expr(p):
 
 
 def p_expression_binop(p):
-    '''expression : expression '+' expression
-                  | expression '-' expression
-                  | expression '*' expression
-                  | expression '/' expression'''
+    '''expression : expression PLUS expression
+                  | expression MINUS expression
+                  | expression TIMES expression
+                  | expression DIVIDE expression'''
     if p[2] == '+':
         p[0] = p[1] + p[3]
     elif p[2] == '-':
         p[0] = p[1] - p[3]
-
+    elif p[2] == '*':
+        p[0] = p[1] * p[3]
+    elif p[2] == '/':
+        p[0] = p[1] / p[3]
 
 def p_expression_uminus(p):
     "expression : '-' expression %prec UMINUS"
