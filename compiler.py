@@ -105,43 +105,23 @@ precedence = (
 names = {}
 abstractTree = []
 
-# declarations 
-def p_statement_declare_var(p):
-    'statement : FLOATDEC NAME is_assing'
-    names[p[2]] = { "type": "FLOAT", "value":p[3]}
-
-# assigns
-def p_is_assing(p):
-    '''is_assing : ASSIGN expression 
-                | '''
-    p[0] = 0
-    if len(p) > 2:
-        p[0] = p[2]
-
-def p_statement_assign(p):
-    'statement : NAME ASSIGN expression'
-    if p[1] not in names:
-        print ( "You must declare a variable before using it")
-    else:
-        names[p[1]]["value"] = p[3]
-
-def p_statement_expr(p):
-    'statement : expression'
-    print("hola",p[1])
-
-
-# print
-def p_statement_print(p):
-    '''statement : PRINT LPAREN expression RPAREN '''
-    print(p[3])
-
 # Control flow
 # def p_statement_if_else(p):
 #     '''statement_if_else : if_cond'''
 #     p[0] = ('condition', p[1], p[2], p[3])
 
 def p_statement(p):
-    '''statement : statement FINISH statement'''
+    '''statement : statement_print FINISH statement
+                | statement_declare FINISH statement
+                | statement_declare_assign FINISH statement
+                | statement_assign FINISH statement
+                | empty'''
+    if len(p) > 2:
+        if p[2] == ';':
+            p[2] = p[3]
+        p[0] = (p[1],) + p[2]
+    else:
+        p[0]=()
 # Operations
 def p_expression_binop(p):
     '''expression : expression PLUS expression
@@ -159,33 +139,43 @@ def p_expression_binop(p):
                   | expression OR expression'''
     p[0] = ('operation',p[1],p[2],p[3])
 
+# print
+def p_statement_print(p):
+    '''statement_print : PRINT expression '''
+    p[0] = ('print', p[2])
+    print(p[0])
+
 # expressions
 def p_expression_uminus(p):
-    "expression : '-' expression %prec UMINUS"
+    "expression : MINUS expression %prec UMINUS"
     p[0] = -p[2]
 
 
 def p_expression_group(p):
-    "expression : '(' expression ')'"
+    "expression : LPAREN expression RPAREN"
     p[0] = p[2]
 
 def p_types(p):
-    '''type : INT
-            | FLOAT
-            | STRING
-            | BOOLEAN'''
+    '''type : INTDEC
+            | FLOATDEC
+            | STRINGDEC
+            | BOOLEANDEC'''
     p[0] = p[1]
 
+def p_empty(p):
+    'empty :'
+    pass
+
 def p_expression_dec(p):
-    """expression : INUMBER
-                | FNUMBER
+    """expression : FNUMBER
+                | INUMBER
                 | STRING
                 | boolean_dec"""
     p[0] = p[1]
 
 def p_expression_boolean(p):
     '''boolean_dec : TRUE
-              | FALSE'''
+                | FALSE'''
     if p[1] == "true":
         p[0] = True
     elif p[1] == "false":
@@ -193,11 +183,20 @@ def p_expression_boolean(p):
 
 def p_expression_name(p):
     "expression : NAME"
-    try:
-        p[0] = names[p[1]]["value"]
-    except LookupError:
-        print("Undefined name '%s'" % p[1])
-        p[0] = 0
+    p[0] = p[1]
+
+# declarations 
+def p_statement_declare(p):
+    'statement_declare : type NAME'
+    p[0] = ('declare', p[1] ,p[2])
+
+def p_statement_declare_assign(p):
+    'statement_declare_assign : type NAME ASSIGN expression'
+    p[0] = ('declare_assign', p[1],p[2])
+
+def p_statement_assign(p):
+    'statement_assign : NAME ASSIGN expression'
+    p[0] = ('assign', p[1],p[2])
 
 # control flow
 # def p_expression_if(p):
