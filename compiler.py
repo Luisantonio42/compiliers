@@ -5,7 +5,12 @@ reserved = {
     'int' : 'INTDEC',
     'float' : 'FLOATDEC',
     'print' : 'PRINT',
-    'string': 'STRINGDEC'
+    'string': 'STRINGDEC',
+    'boolean': 'BOOLEANDEC',
+    'true': 'TRUE',
+    'false':'FALSE',
+    'and': 'AND',
+    'or': 'OR'
  }
 
 tokens = [
@@ -68,6 +73,7 @@ lexer = lex.lex()
 # Parsing rules
 
 precedence = (
+    ('left','AND','OR'),
     ('nonassoc','EQUALS','NOT_EQUALS', 'M_EQUALS', 'L_EQUALS', 'MORE', 'LESS'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
@@ -98,6 +104,10 @@ def p_statement_declare_string(p):
     else:
         names[p[2]] = { "type": "STRING", "value":p[3]}
 
+def p_statement_declare_boolean(p):
+    'statement : BOOLEANDEC NAME is_assing'
+    names[p[2]] = { "type": "BOOLEAN", "value":p[3]}
+
 def p_is_assing(p):
     '''is_assing : ASSIGN expression 
                 | '''
@@ -113,7 +123,8 @@ def p_statement_assign(p):
     'statement : NAME ASSIGN expression'
     if p[1] not in names:
         print ( "You must declare a variable before using it")
-    names[p[1]]["value"] = p[3]
+    else:
+        names[p[1]]["value"] = p[3]
 
 
 def p_statement_expr(p):
@@ -132,7 +143,9 @@ def p_expression_binop(p):
                   | expression M_EQUALS expression
                   | expression L_EQUALS expression
                   | expression MORE expression
-                  | expression LESS expression'''
+                  | expression LESS expression
+                  | expression AND expression
+                  | expression OR expression'''
     # p[0] = ('operation',p[1],p[2],p[3])
     if p[2] == '+':
         p[0] = p[1] + p[3]
@@ -156,6 +169,10 @@ def p_expression_binop(p):
         p[0] = p[1] <= p[3]
     elif p[2] == '^':
         p[0] = p[1] ** p[3]
+    elif p[2] == 'and':
+        p[0] = p[1] and p[3]
+    elif p[2] == 'or':
+        p[0] = p[1] or p[3]
 
 def p_expression_uminus(p):
     "expression : '-' expression %prec UMINUS"
@@ -180,6 +197,14 @@ def p_expression_string(p):
     "expression : STRING"
     p[0] = p[1]
     # print(p[0])
+
+def p_expression_bool(p):
+    '''expression : TRUE
+              | FALSE'''
+    if p[1] == "true":
+        p[0] = True
+    elif p[1] == "false":
+        p[0] = False
 
 def p_expression_name(p):
     "expression : NAME"
