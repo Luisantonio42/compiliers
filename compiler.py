@@ -1,8 +1,6 @@
 import ply.yacc as yacc
 import ply.lex as lex
 
-# literals = ['=', '+', '-', '*', '/','^', '(', ')','==','!=', '>=','<=','>','<','{','}']
-
 reserved = { 
     'int' : 'INTDEC',
     'float' : 'FLOATDEC',
@@ -11,15 +9,17 @@ reserved = {
  }
 
 tokens = [
-    'INUMBER', 'FNUMBER', 'NAME', 'PLUS', 'TIMES', 'LPAREN', 
-    'RPAREN', 'MINUS', 'DIVIDE','EQUALS', 'ASSIGN', 'STRING', 
-    'NOT_EQUALS', 'M_EQUALS', 'L_EQUALS', 'MORE', 'LESS'
+    'INUMBER', 'FNUMBER', 'NAME', 'PLUS', 'TIMES','EXP',
+    'LPAREN', 'RPAREN', 'MINUS', 'DIVIDE','EQUALS', 'ASSIGN', 
+    'STRING', 'NOT_EQUALS', 'M_EQUALS', 'L_EQUALS', 'MORE', 
+    'LESS'
 ] + list(reserved.values())
 
 t_PLUS    = r'\+'
 t_MINUS   = r'-'
 t_TIMES   = r'\*'
 t_DIVIDE  = r'/'
+t_EXP = r'\^'
 t_EQUALS  = r'=='
 t_NOT_EQUALS  = r'!='
 t_M_EQUALS = r'>='
@@ -29,7 +29,6 @@ t_MORE = r'>'
 t_ASSIGN = r'='
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
-# t_NAME    = r'[a-zA-Z_][a-zA-Z0-9_]*'
 
 # Tokens
 def t_NAME(t):
@@ -72,6 +71,7 @@ precedence = (
     ('nonassoc','EQUALS','NOT_EQUALS', 'M_EQUALS', 'L_EQUALS', 'MORE', 'LESS'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
+    ('left', 'EXP'),
     ('right', 'UMINUS'),
 )
 
@@ -94,7 +94,7 @@ def p_statement_declare_float(p):
 def p_statement_declare_string(p):
     'statement : STRINGDEC NAME is_assing'
     if type(p[3]) == float or type(p[3]) == int:
-        print("You need to use quotes("") to declare a string ")
+        print("You need to use quotes("") to declare a number as a string ")
     else:
         names[p[2]] = { "type": "STRING", "value":p[3]}
 
@@ -126,6 +126,7 @@ def p_expression_binop(p):
                   | expression MINUS expression
                   | expression TIMES expression
                   | expression DIVIDE expression
+                  | expression EXP expression
                   | expression EQUALS expression
                   | expression NOT_EQUALS expression
                   | expression M_EQUALS expression
@@ -153,6 +154,8 @@ def p_expression_binop(p):
         p[0] = p[1] >= p[3]
     elif p[2] == '<=':
         p[0] = p[1] <= p[3]
+    elif p[2] == '^':
+        p[0] = p[1] ** p[3]
 
 def p_expression_uminus(p):
     "expression : '-' expression %prec UMINUS"
