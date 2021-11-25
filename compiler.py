@@ -11,7 +11,9 @@ reserved = {
  }
 
 tokens = [
-    'INUMBER', 'FNUMBER', 'NAME', 'PLUS', 'TIMES', 'LPAREN', 'RPAREN', 'MINUS', 'DIVIDE','EQUALS', 'ASSIGN', 'STRING'
+    'INUMBER', 'FNUMBER', 'NAME', 'PLUS', 'TIMES', 'LPAREN', 
+    'RPAREN', 'MINUS', 'DIVIDE','EQUALS', 'ASSIGN', 'STRING', 
+    'NOT_EQUALS', 'M_EQUALS', 'L_EQUALS', 'MORE', 'LESS'
 ] + list(reserved.values())
 
 t_PLUS    = r'\+'
@@ -19,6 +21,11 @@ t_MINUS   = r'-'
 t_TIMES   = r'\*'
 t_DIVIDE  = r'/'
 t_EQUALS  = r'=='
+t_NOT_EQUALS  = r'!='
+t_M_EQUALS = r'>='
+t_L_EQUALS = r'<='
+t_LESS = r'<'
+t_MORE = r'>'
 t_ASSIGN = r'='
 t_LPAREN  = r'\('
 t_RPAREN  = r'\)'
@@ -41,6 +48,11 @@ def t_INUMBER(t):
     t.value = int(t.value)
     return t
 
+def t_STRING(t):
+    r'\"([^\\\n]|(\\.))*?\"'
+    t.value = t.value.replace("\"","")
+    return t
+
 t_ignore = " \t"
 
 def t_newline(t):
@@ -57,6 +69,7 @@ lexer = lex.lex()
 # Parsing rules
 
 precedence = (
+    ('nonassoc','EQUALS','NOT_EQUALS', 'M_EQUALS', 'L_EQUALS', 'MORE', 'LESS'),
     ('left', 'PLUS', 'MINUS'),
     ('left', 'TIMES', 'DIVIDE'),
     ('right', 'UMINUS'),
@@ -66,41 +79,30 @@ precedence = (
 names = {}
 abstractTree = []
 
-# class Node:
-#     val = ''
-#     type = ''
-#     children = []
-
-#     def __init__(self,val,type,children):
-#         self.val = val
-#         self.type = type
-#         self.children = children
-
-
 def p_statement_declare_int(p):
     '''statement : INTDEC NAME is_assing
     '''
     if type(p[3]) == float:
         print("You can not assing a float to an integer")
     else:
-        # variable = Node(p[2], 'INT', [])
-        # n = Node(p[3],'=',[variable, p[3]])
-        # abstractTree.append(n)
         names[p[2]] = { "type": "INT", "value": p[3]}
 
 def p_statement_declare_float(p):
     'statement : FLOATDEC NAME is_assing'
     names[p[2]] = { "type": "FLOAT", "value":p[3]}
 
+def p_statement_declare_string(p):
+    'statement : STRINGDEC NAME is_assing'
+    if type(p[3]) == float or type(p[3]) == int:
+        print("You need to use quotes("") to declare a string ")
+    else:
+        names[p[2]] = { "type": "STRING", "value":p[3]}
+
 def p_is_assing(p):
     '''is_assing : ASSIGN expression 
                 | '''
     p[0] = 0
-    # p[0] = Node(0,'INT',[])
     if len(p) > 2:
-        # p[0].type = p[2].type
-        # p[0].val = p[2].val
-        # p[0].children = [p[2]]
         p[0] = p[2]
 
 def p_statement_print(p):
@@ -116,14 +118,20 @@ def p_statement_assign(p):
 
 def p_statement_expr(p):
     'statement : expression'
-    # print(p[1])
+    print(p[1])
 
 
 def p_expression_binop(p):
     '''expression : expression PLUS expression
                   | expression MINUS expression
                   | expression TIMES expression
-                  | expression DIVIDE expression'''
+                  | expression DIVIDE expression
+                  | expression EQUALS expression
+                  | expression NOT_EQUALS expression
+                  | expression M_EQUALS expression
+                  | expression L_EQUALS expression
+                  | expression MORE expression
+                  | expression LESS expression'''
     # p[0] = ('operation',p[1],p[2],p[3])
     if p[2] == '+':
         p[0] = p[1] + p[3]
@@ -133,6 +141,18 @@ def p_expression_binop(p):
         p[0] = p[1] * p[3]
     elif p[2] == '/':
         p[0] = p[1] / p[3]
+    elif p[2] == '==':
+        p[0] = p[1] == p[3]
+    elif p[2] == '!=':
+        p[0] = p[1] != p[3]
+    elif p[2] == '>':
+        p[0] = p[1] > p[3]
+    elif p[2] == '<':
+        p[0] = p[1] < p[3]
+    elif p[2] == '>=':
+        p[0] = p[1] >= p[3]
+    elif p[2] == '<=':
+        p[0] = p[1] <= p[3]
 
 def p_expression_uminus(p):
     "expression : '-' expression %prec UMINUS"
@@ -147,13 +167,16 @@ def p_expression_group(p):
 def p_expression_inumber(p):
     "expression : INUMBER"
     p[0] = p[1]
-    # p[0] = Node(p[1], 'INT',[])
 
 
 def p_expression_fnumber(p):
     "expression : FNUMBER"
     p[0] = p[1]
 
+def p_expression_string(p):
+    "expression : STRING"
+    p[0] = p[1]
+    # print(p[0])
 
 def p_expression_name(p):
     "expression : NAME"
