@@ -286,11 +286,14 @@ print("Comandss -----------------------")
 for i in commands:
     print(i)
 
-label = 1
-cont = 1
+label_cont = 1
+var_cont = 1
 
 def parse_commands(command):
     
+    if type(command) is not tuple:
+        return command
+
     # print(command[0])
     if command[0] == 'declare':
         var_type = command[1]
@@ -301,26 +304,29 @@ def parse_commands(command):
         var_type = command[1]
         name = command[2]
         res = ''
-        res += '{}dec ({})\n'.format(var_type,name)
+        res += '{}dec ({})\n'.format(var_type, name)
+        tmp_parse = parse_commands(command[3])
         res += '{} := {}\n'.format(name, command[3])
         return res
     
     elif command[0] == 'assign':
         name = command[1]
-        return '{} := {}\n'.format(name, command[2])
-        # results.write('{} {}\n'.format(var_type,name))
+        tmp_parse = parse_commands(command[2])
+        return '{} := {}\n'.format(name, tmp_parse)
     
     elif command[0] == 'print':
-        return 'print ({})'.format(command[1])
-
+        return 'print ({})'.format(parse_commands(command[0]))
 
     elif command[0] == 'operation':
+        global label_cont
         result = ''
-        result += 't{}'.format(label)
-        result += '{} {} {}'.format(command[1],command[2],command[3])
+        result += 't{} '.format(label_cont)
+        label_cont += 1
+        result += '{} {} {}'.format(parse_commands(command[1]),command[2],parse_commands(command[3]))
 
     elif command[0] == 'if':
-        return 
+        return
+        
     elif command[0] == 'condition':
         return
     
@@ -334,4 +340,4 @@ def parse_commands(command):
         return 'Error'
 
 for command in commands:
-    parse_commands(command)
+    print(parse_commands(command))
