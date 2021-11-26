@@ -1,6 +1,8 @@
 import ply.yacc as yacc
 import ply.lex as lex
 
+commands = []
+
 reserved = {
     # datatypes 
     'int' : 'INTDEC',
@@ -25,12 +27,12 @@ reserved = {
     'print' : 'PRINT'
  }
 
-tokens = tuple([
+tokens = [
     'INUMBER', 'FNUMBER', 'NAME', 'PLUS', 'TIMES','EXP',
     'LPAREN', 'RPAREN', 'MINUS', 'DIVIDE','EQUALS', 'ASSIGN', 
     'STRING', 'NOT_EQUALS', 'M_EQUALS', 'L_EQUALS', 'MORE', 
     'LESS', 'LKEY', 'RKEY', 'FINISH'
-] + list(reserved.values()))
+] + list(reserved.values())
 
 # arithmetic ops 
 t_PLUS    = r'\+'
@@ -103,9 +105,10 @@ precedence = (
     ('right', 'UMINUS'),
 )
 
-# dictionary of names
-names = {}
-abstractTree = []
+def p_start(p):
+    '''start : statement'''
+    global commands
+    commands = p[1]
 
 def p_statement(p):
     '''statement : statement_print FINISH statement
@@ -144,7 +147,7 @@ def p_expression_binop(p):
 def p_statement_print(p):
     '''statement_print : PRINT expression '''
     p[0] = ('print', p[2])
-    print(p[0])
+    # print(p[0])
 
 # expressions
 def p_expression_uminus(p):
@@ -194,11 +197,11 @@ def p_statement_declare(p):
 
 def p_statement_declare_assign(p):
     'statement_declare_assign : type NAME ASSIGN expression'
-    p[0] = ('declare_assign', p[1],p[2])
+    p[0] = ('declare assign', p[1],p[2],p[4])
 
 def p_statement_assign(p):
     'statement_assign : NAME ASSIGN expression'
-    p[0] = ('assign', p[1],p[2])
+    p[0] = ('assign', p[1],p[3])
 
 # Control flow statements
 # IF - ELIF - ELSE
@@ -273,3 +276,62 @@ inputData = []
 file = open("data.txt", "r")
 s = file.read()
 yacc.parse(s)
+
+
+# ------------------- THREE WAY CODE ------------------- #
+
+results = open("results.txt", "w")
+print("total commands: ",len(commands))
+print("Comandss -----------------------")
+for i in commands:
+    print(i)
+
+label = 1
+cont = 1
+
+def parse_commands(command):
+    
+    # print(command[0])
+    if command[0] == 'declare':
+        var_type = command[1]
+        name = command[2]
+        return '{}dec ({})'.format(var_type, name)
+
+    elif command[0] == 'declare assign':
+        var_type = command[1]
+        name = command[2]
+        res = ''
+        res += '{}dec ({})\n'.format(var_type,name)
+        res += '{} := {}\n'.format(name, command[3])
+        return res
+    
+    elif command[0] == 'assign':
+        name = command[1]
+        return '{} := {}\n'.format(name, command[2])
+        # results.write('{} {}\n'.format(var_type,name))
+    
+    elif command[0] == 'print':
+        return 'print ({})'.format(command[1])
+
+
+    elif command[0] == 'operation':
+        result = ''
+        result += 't{}'.format(label)
+        result += '{} {} {}'.format(command[1],command[2],command[3])
+
+    elif command[0] == 'if':
+        return 
+    elif command[0] == 'condition':
+        return
+    
+    elif command[0] == 'for':
+        return
+    
+    elif command[0] == 'while':
+        return
+    
+    else:
+        return 'Error'
+
+for command in commands:
+    parse_commands(command)
